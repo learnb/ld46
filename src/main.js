@@ -18,7 +18,7 @@ var monster = { // damages npc
     radius: 4,
     x: 0,
     y: 0,
-    sid: 122
+    sid: 48
 }
 
 var monsterList = [];
@@ -27,7 +27,7 @@ var loot = { // bonus gold when collected
     radius: 4,
     x: 0,
     y: 0,
-    sid: 160
+    sid: 35
 }
 
 var lootList = [];
@@ -37,14 +37,14 @@ var pc = { // playable character
     radius: 4,
     x: 60,
     y: 100,
-    sid: 0
+    sid: 16
 }
 
 var obstacle = { // damages pc
     radius: 4,
     x: 0,
     y: 0,
-    sid: 177
+    sid: 32
 }
 
 var obstacleList = [];
@@ -53,8 +53,8 @@ var collectible = { // pc can collect
     radius: 4,
     x: 0,
     y: 0,
-    sid0: 168,
-    sid1: 167,
+    sid0: 33,
+    sid1: 34,
     type: 0
 }
 
@@ -77,14 +77,14 @@ function init() { // reset state data to defaults
         gold: 10,
         x: 60,
         y: 20,
-        sid: 144
+        sid: 0
     }
 
     pc = { // playable character
         radius: 4,
         x: 60,
         y: 100,
-        sid: 153
+        sid: 16
     }
     obstacleList = []
     collectibleList = []
@@ -271,10 +271,10 @@ function drawSimUI() {
 
 
     // hunger bar
-    drawBar((8*10), (8*0)+1, (npc.hunger/100), 15)
+    drawBar((8*10), (8*0)+1, (npc.hunger/100), 14)
 
     // gold label
-    drawLabel((8*1), (8*8), 80, `gold: ${Math.floor(npc.gold)}`)
+    drawLabel((8*1)-1, (8*8), (8*14)+2, `gold: ${Math.floor(npc.gold)}`)
     return
 }
 
@@ -310,6 +310,6 @@ function drawLabel(x, y, w, val) {
     pen(11)
     print(val, x+2, y+1)
     // border
-    pen(1)
+    pen(8)
     rect(x,y,w,8)
 }
