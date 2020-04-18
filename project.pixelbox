@@ -1,0 +1,83 @@
+{
+	"name": "ldj46",
+	"version": "2.0.0",
+	"appid": "isGE3XQ1eMj0784k",
+	"screen": {
+		"fullscreen": false,
+		"resizable": true,
+		"keepAspectRatio": false,
+		"width": 128,
+		"height": 128,
+		"pixelSize": {
+			"width": 4,
+			"height": 4
+		}
+	},
+	"tileSize": {
+		"width": 8,
+		"height": 8
+	},
+	"palette": {
+		"name": "pico8",
+		"file": "palette",
+		"colors": [
+			"#000000",
+			"#FFF1E8",
+			"#008751",
+			"#AB5236",
+			"#7E2553",
+			"#5F574F",
+			"#29ADFF",
+			"#00E756",
+			"#FFA300",
+			"#FF77A8",
+			"#C2C3C7",
+			"#83769C",
+			"#FFFF27",
+			"#FFCCAA",
+			"#1D2B53",
+			"#FF004D"
+		]
+	},
+	"controls": {
+		"up": 87,
+		"down": 83,
+		"left": 65,
+		"right": 68,
+		"A": 74,
+		"B": 75
+	},
+	"touchEvent": {
+		"multiTouch": false,
+		"disableContextMenu": true,
+		"hideMousePointer": false
+	},
+	"gamepad": {
+		"analogToDpad": true,
+		"deadZone": 0.5
+	},
+	"loader": {
+		"colors": [
+			"#1401C1",
+			"#DEEED6"
+		],
+		"custom": ""
+	},
+	"components": {
+		"pixelboxCore": true,
+		"webGL": false,
+		"miniText": true,
+		"keyboard": true,
+		"gamepad": true,
+		"AudioManager": true,
+		"patatracker": false,
+		"bleeper": true,
+		"TINA": false
+	},
+	"buildOptions": {
+		"scriptLanguage": "ES6",
+		"hasAtlas": false,
+		"mangle": [],
+		"globals": {}
+	}
+}
