@@ -1,1 +1,46 @@
-{"_type":"Bleeper program","v":1,"s":[{"n":"damage","i":[6,0,127,0],"s":"';U'AU'HU'PU'VU'[U'_U'aU'dU'kU'nU'qU'sU'uU'xU'yU'{U'{U'yU'rU'jU'bU'XU'PU'LU'FU'AU'=U'8U'4U'1U'/U"},{"n":"death","i":[40,0,127,0],"s":"%XV&YU#XS&VQ%XP&VO#TM&WL%XK&TI#TG&UG%VE&ZD#RC&VB%T@&X>#M=&Y<%T:&X8#O6&W5%U4&V3#L1&U/%N-&W*#K&&Q#"},{"n":"pickup","i":[5,0,127,0],"s":"(%U'%U($U'&U('U')U(*U'+U(,U'-U(0U'3U(4U'6U(8U':U(<U'=U(@U'BU(DU'FU(HU'JU(LU'PU(RU'VU(YU'^U(bU'gU"},{"n":"dmg2","i":[1,0,127,0],"s":"#[)#[+#Z-#Z/#Z2#Z4#Z7#Y:#Y<#X>#Y@#XB#XD#XF#XH#XK#XM#XN#WP#VQ#VS#VS#VR#VN#VF#V?#V=#V;#V:#V:#V7#X5"}]}
+{
+	"_type": "Bleeper program",
+	"v": 1,
+	"s": [
+		{
+			"n": "damage",
+			"i": [
+				6,
+				0,
+				127,
+				0
+			],
+			"s": "';U'AU'HU'PU'VU'[U'_U'aU'dU'kU'nU'qU'sU'uU'xU'yU'{U'{U'yU'rU'jU'bU'XU'PU'LU'FU'AU'=U'8U'4U'1U'/U"
+		},
+		{
+			"n": "death",
+			"i": [
+				40,
+				0,
+				127,
+				0
+			],
+			"s": "%XV&YU#XS&VQ%XP&VO#TM&WL%XK&TI#TG&UG%VE&ZD#RC&VB%T@&X>#M=&Y<%T:&X8#O6&W5%U4&V3#L1&U/%N-&W*#K&&Q#"
+		},
+		{
+			"n": "pickup",
+			"i": [
+				5,
+				0,
+				127,
+				0
+			],
+			"s": "(%U'%U($U'&U('U')U(*U'+U(,U'-U(0U'3U(4U'6U(8U':U(<U'=U(@U'BU(DU'FU(HU'JU(LU'PU(RU'VU(YU'^U(bU'gU"
+		},
+		{
+			"n": "dmg2",
+			"i": [
+				1,
+				0,
+				127,
+				0
+			],
+			"s": "#[)#[+#Z-#Z/#Z2#Z4#Z7#Y:#Y<#X>#Y@#XB#XD#XF#XH#XK#XM#XN#WP#VQ#VS#VS#VR#VN#VF#V?#V=#V;#V:#V:#V7#X5"
+		}
+	]
+}
