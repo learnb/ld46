@@ -22,7 +22,7 @@ var npcTarget = {
 var npcWalking = false
 var monster = { // damages npc
     radius: 4,
-    searchRadius: 6,
+    searchRadius: 8,
     x: 0,
     y: 0,
     sid: 48,
@@ -33,7 +33,7 @@ var monsterList = [];
 var monsterTimer = 100;
 var loot = { // bonus gold when collected
     radius: 4,
-    searchRadius: 6,
+    searchRadius: 8,
     x: 0,
     y: 0,
     sid: 35,
@@ -331,30 +331,9 @@ function updateSim() {
     if (!npcWalking) {
         // acquire target
         let target = {x: null, y: null}
-       
-        // search for loot
-        let foundList = []
-        lootList.forEach((elem, indx) => { // scan distances
-            foundList.push({dist: dist(npc, elem), elem: elem})
-        })
-        if (foundList.length > 0) {
-            foundList.sort((a, b) => a.dist-b.dist) // sort to find min dist
-            if (searchCheck(foundList[0].elem)) { // if in sight of npc
-                target = Object.assign({}, foundList[0].elem)
-            }
-        }
 
-        // search for mobs
-        foundList = []
-        monsterList.forEach((elem, indx) => { // scan distances
-            foundList.push({dist: dist(elem, npc), elem: elem})
-        })
-        if (foundList.length > 0) {
-            foundList.sort((a, b) => a.dist-b.dist) // sort to find min dist
-            if (searchCheck(foundList[0].elem)) { // if in sight of npc
-                target = Object.assign({}, foundList[0].elem)
-            }
-        }
+        // NPC search
+        target = npcSearch() 
 
         // wander (random target)
         if (target.x === null || target.y === null) {
@@ -363,7 +342,13 @@ function updateSim() {
         npcTarget = target
 
         npcWalking = true
+    } else {
+        let target = npcSearch()
+        if (target.x !== null || target.y !== null) {
+            npcTarget = target
+        }
     }
+
     let vel = npcMoveTo(npcTarget.x, npcTarget.y)
     let dX = vel[0]
     let dY = vel[1]
@@ -396,6 +381,25 @@ function updateSim() {
 
     // gain gold
     npc.gold += 0.03
+}
+
+function npcSearch() {
+    // NPC search
+    let target = {x: null, y: null}
+    let foundList = []
+    lootList.forEach((elem, indx) => { // scan distances
+        foundList.push({dist: dist(npc, elem), elem: elem})
+    })
+    monsterList.forEach((elem, indx) => { // scan distances
+        foundList.push({dist: dist(elem, npc), elem: elem})
+    })
+    if (foundList.length > 0) {
+        foundList.sort((a, b) => a.dist-b.dist) // sort to find min dist
+        if (searchCheck(foundList[0].elem)) { // if in sight of npc
+            target = Object.assign({}, foundList[0].elem)
+        }
+    }
+    return target
 }
 
 function randomSimPos() {
@@ -476,6 +480,8 @@ function drawSim() {
     monsterList.forEach((elem, indx) => {
         sprite(elem.sid, elem.x, elem.y)
     })
+
+    sprite(16, npcTarget.x, npcTarget.y)
 }
 
 function drawSimUI() {
