@@ -14,32 +14,32 @@ var npc = { // "Pet" non-playable character
     y: 20,
     sid: 0
 }
-
 var npcTarget = {
     radius: 3,
     x: 0,
     y: 0
 }
-
 var npcWalking = false
-
 var monster = { // damages npc
     radius: 4,
+    searchRadius: 6,
     x: 0,
     y: 0,
-    sid: 48
+    sid: 48,
+    type: 'm'
 }
-
 var monsterList = [];
-
+var monsterTimer = 100;
 var loot = { // bonus gold when collected
     radius: 4,
+    searchRadius: 6,
     x: 0,
     y: 0,
-    sid: 35
+    sid: 35,
+    type: 'l'
 }
-
 var lootList = [];
+var lootTimer = 100;
 
 // Action Game
 var pc = { // playable character
@@ -49,16 +49,13 @@ var pc = { // playable character
     y: 100,
     sid: 16
 }
-
 var obstacle = { // damages pc
     radius: 4,
     x: 0,
     y: 0,
     sid: 32
 }
-
 var obstacleList = [];
-
 var collectible = { // pc can collect
     radius: 3,
     x: 0,
@@ -67,7 +64,6 @@ var collectible = { // pc can collect
     sid1: 34,
     type: 0
 }
-
 var collectibleList = []
 
 var gameActive = false;
@@ -91,6 +87,8 @@ function init() { // reset state data to defaults
     npcWalking = false
     monsterList = []
     lootList = []
+    monsterTimer = 100
+    lootTimer = 100
 
     gameTimer = gameTimerMax;
     gameActive = false;
@@ -140,6 +138,7 @@ exports.update = function () {
 
     // other sprites
     if (gameActive) drawGame()
+    drawSim()
 
     // characters
     sprite(npc.sid, npc.x, npc.y)
@@ -207,6 +206,22 @@ function healNPC() {
     npc.hp+10 >= 100 ? npc.hp = 100 : npc.hp += 10
 }
 
+function collectLoot(loot) {
+    npc.gold += 25
+
+    // remove loot from Sim
+    let updatedList = lootList.filter(elem => elem !== loot)
+    lootList = updatedList
+}
+
+function fight(mob) {
+    npc.hp -= random(0, 15)+3
+    
+    // remove loot from Sim
+    let updatedList = monsterList.filter(elem => elem !== loot)
+    monsterList = updatedList
+}
+
 
 function startActionGame() {
     genGame(); // generate enemies and collectibles
@@ -215,32 +230,51 @@ function startActionGame() {
 }
 
 function genGame() {
+    // spawn collectibles and obstacles
     collectibleList = []
     obstacleList = []
     for (let i=0; i<=5; i++) {
         let c1 = Object.assign({}, collectible)
-        c1.x = random((8*1), (8*14))
-        c1.y = random((8*9), (8*14))
+        let pos = randomGamePos()
+        c1.x = pos.x 
+        c1.y = pos.y
         c1.type = random(0, 2)
         collectibleList.push(c1)
     }
 
     for (let i=0; i<=5; i++) {
         let o1 = Object.assign({}, obstacle)
-        o1.x = random((8*1), (8*14))
-        o1.y = random((8*9), (8*14))
+        let pos = randomGamePos()
+        o1.x = pos.x
+        o1.y = pos.y
         obstacleList.push(o1)
     }
     
     return
 }
 
+function randomGamePos() {
+    return {x: random((8*1), (8*14)), y: random((8*9), (8*14)), type: 'p'}
+}
+
 function collisionCheck(entA, entB) {
     var dx = entA.x - entB.x;
     var dy = entA.y - entB.y;
-    var dist = Math.sqrt(dx*dx + dy*dy);
+    var dist = mag(dx, dy);
 
     if (dist < entA.radius + entB.radius) {
+        return true;
+    }
+
+    return false
+}
+
+function searchCheck(ent) {
+    var dx = npc.x - ent.x
+    var dy = npc.y - ent.y
+    var dist = mag(dx, dy)
+
+    if (dist < npc.radius + ent.searchRadius) {
         return true;
     }
 
@@ -260,13 +294,62 @@ function death() {
 }
 
 function updateSim() {
-    // npc actions
-    if (!npcWalking) {
-        npcWalking = true
-        npcTarget.x = (8 * random(0, 15))
-        npcTarget.y = (8 * random(0, 6)) + (8*1)
+    // check end condition
+    if (npc.hp <= 0 || npc.hunger <= 0) {
+        death()
     }
 
+    // gen mobs and loot
+    lootTimer <= 0 ? lootTimer = 0 : lootTimer -= 1
+    monsterTimer <= 0 ? monsterTimer = 0 : monsterTimer -= 0.7
+
+    if (lootTimer <= 0) {
+        spawnLoot()
+        lootTimer = 100
+    }
+    if (monsterTimer <= 0) {
+        spawnMonster()
+        monsterTimer = 100
+    }
+
+
+    // npc actions
+    if (!npcWalking) {
+        // acquire target
+        let target = {x: null, y: null}
+       
+        // search for loot
+        let foundList = []
+        lootList.forEach((elem, indx) => { // scan distances
+            foundList.push({dist: dist(npc, elem), elem: elem})
+        })
+        if (foundList.length > 0) {
+            foundList.sort((a, b) => a.dist-b.dist) // sort to find min dist
+            if (searchCheck(foundList[0].elem)) { // if in sight of npc
+                target = Object.assign({}, foundList[0].elem)
+            }
+        }
+
+        // search for mobs
+        foundList = []
+        monsterList.forEach((elem, indx) => { // scan distances
+            foundList.push({dist: dist(elem, npc), elem: elem})
+        })
+        if (foundList.length > 0) {
+            foundList.sort((a, b) => a.dist-b.dist) // sort to find min dist
+            if (searchCheck(foundList[0].elem)) { // if in sight of npc
+                target = Object.assign({}, foundList[0].elem)
+            }
+        }
+
+        // wander (random target)
+        if (target.x === null || target.y === null) {
+            target = randomSimPos()
+        }
+        npcTarget = target
+
+        npcWalking = true
+    }
     let vel = npcMoveTo(npcTarget.x, npcTarget.y)
     let dX = vel[0]
     let dY = vel[1]
@@ -274,6 +357,12 @@ function updateSim() {
     if(npcWalking) {
         if (collisionCheck(npc, npcTarget)) {
             npcWalking = false
+            if (npcTarget.type == 'l') {
+                collectLoot(npcTarget) // collect loot
+            }
+            if (npcTarget.type == 'm') {
+                fight(npcTarget) // fight mob
+            }
         }
     }
 
@@ -289,10 +378,30 @@ function updateSim() {
 
     // consume resources
     npc.hp <= 0 ? npc.hp = 0 : npc.hp -= 0.001
-    npc.hunger <= 0 ? npc.hunger = 0 : npc.hunger -= 0.01
+    npc.hunger <= 0 ? npc.hunger = 0 : npc.hunger -= 0.1
 
     // gain gold
     npc.gold += 0.03
+}
+
+function randomSimPos() {
+    return {x: (8*random(0,15)), y: (8*random(0,6))+(8*1), type: 'p', radius: 4}
+}
+
+function spawnLoot() {
+    let l = Object.assign({}, loot)
+    let pos = randomSimPos()
+    l.x = pos.x
+    l.y = pos.y
+    lootList.push(l)
+}
+
+function spawnMonster() {
+    let m = Object.assign({}, monster)
+    let pos = randomSimPos()
+    m.x = pos.x
+    m.y = pos.y
+    monsterList.push(m)
 }
 
 function npcMoveTo(tx, ty) {
@@ -307,6 +416,13 @@ function checkSimWalls(dX, dY){
     if(npc.y+dY < (8*1) || npc.y+dY > (8*7)) {blocked.y = true} 
     if(npc.x+dX < (8*0) || npc.x+dX > (8*15)) {blocked.x = true} 
     return blocked
+}
+
+function dist(entA, entB) {
+    let dx = entA.x - entB.x
+    let dy = entA.y - entB.y
+    let dist = mag(dx, dy)
+    return dist
 }
 
 function mag(x, y) {
@@ -333,6 +449,15 @@ function drawGame() {
         if (elem.type == 1) sprite(elem.sid1, elem.x, elem.y)
     })
     obstacleList.forEach((elem, indx) => {
+        sprite(elem.sid, elem.x, elem.y)
+    })
+}
+
+function drawSim() {
+    lootList.forEach((elem, indx) => {
+        sprite(elem.sid, elem.x, elem.y)
+    })
+    monsterList.forEach((elem, indx) => {
         sprite(elem.sid, elem.x, elem.y)
     })
 }
