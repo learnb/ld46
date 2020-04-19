@@ -238,6 +238,7 @@ function collectLoot(loot) {
 function fight(mob) {
     sfx('damage', 0.5)
     npc.hp -= random(0, 20)+20
+    npc.gold += random(0, 10)+5
     
     // remove loot from Sim
     //monsterList.splice(monsterList.indexOf(mob), 1)
