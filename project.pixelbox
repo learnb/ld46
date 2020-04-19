@@ -70,7 +70,7 @@
 		"keyboard": true,
 		"gamepad": true,
 		"AudioManager": true,
-		"patatracker": false,
+		"patatracker": true,
 		"bleeper": true,
 		"TINA": false
 	},

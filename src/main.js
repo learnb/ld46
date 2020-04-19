@@ -46,7 +46,7 @@ var idCounter = 0;
 
 // Action Game
 var pc = { // playable character
-    radius: 4,
+    radius: 3,
     speed: 1,
     x: 60,
     y: 100,
@@ -74,9 +74,11 @@ var gameTimer = 0;
 var gameTimerMax = 32;
 var gameCost = 10;
 
+var paused = false
 var background = getMap("map")
 
 function init() { // reset state data to defaults
+    paused = false
     npc = { // "Pet" non-playable character
         radius: 4,
         speed: 0.7,
@@ -97,7 +99,7 @@ function init() { // reset state data to defaults
     gameTimer = gameTimerMax;
     gameActive = false;
     pc = { // playable character
-        radius: 4,
+        radius: 3,
         speed: 1,
         x: 60,
         y: 100,
@@ -105,6 +107,8 @@ function init() { // reset state data to defaults
     }
     obstacleList = []
     collectibleList = []
+    
+    patatracker.playSong(0)
 }
 
 init();
@@ -112,45 +116,50 @@ init();
 // Update is called once per frame
 exports.update = function () {
 
-    /* User Input */
-    let deltaX = 0;
-    let deltaY = 0;
-    if (window.gamepad.btn.right) deltaX += 1;
-    if (window.gamepad.btn.left) deltaX -= 1;
-    if (window.gamepad.btn.up) deltaY -= 1;
-    if (window.gamepad.btn.down) deltaY += 1;
-    if (window.gamepad.btn.A) {
-        if (!gameActive && npc.gold >= gameCost) {
-            npc.gold -= gameCost;
-            startActionGame();
+    if (!paused) {
+        /* User Input */
+        let deltaX = 0;
+        let deltaY = 0;
+        if (window.gamepad.btn.right) deltaX += 1;
+        if (window.gamepad.btn.left) deltaX -= 1;
+        if (window.gamepad.btn.up) deltaY -= 1;
+        if (window.gamepad.btn.down) deltaY += 1;
+        if (window.gamepad.btn.A) {
+            if (!gameActive && npc.gold >= gameCost) {
+                npc.gold -= gameCost;
+                startActionGame();
+            }
         }
-    }
 
-    /* Collision Dectection */
+        /* Collision Dectection */
     
-    // Action Game Collision
-    updateGame(deltaX, deltaY);
+        // Action Game Collision
+        updateGame(deltaX, deltaY);
 
-    // Adventure Sim Collision
-    updateSim();
+        // Adventure Sim Collision
+        updateSim();
 
-    /* Render */
-    cls();
+        /* Render */
+        cls();
 
-    // background
-    draw(background, 0, 0)
+        // background
+        draw(background, 0, 0)
 
-    // other sprites
-    if (gameActive) drawGame()
-    drawSim()
+        // other sprites
+        if (gameActive) drawGame()
+        drawSim()
 
-    // characters
-    sprite(npc.sid, npc.x, npc.y)
-    sprite(pc.sid, pc.x, pc.y)
+        // characters
+        sprite(npc.sid, npc.x, npc.y)
+        sprite(pc.sid, pc.x, pc.y)
 
-    // UI
-    drawSimUI();
-    drawGameUI();
+        // UI
+        drawSimUI();
+        drawGameUI();
+    } else {
+        if (window.gamepad.btn.A) init()
+        drawGameOver();
+    }
 };
 
 /* State Update functions */
@@ -205,7 +214,7 @@ function newID() {
 }
 
 function hurtPC() {
-    gameTimer -= 3
+    gameTimer -= gameTimerMax/3
 }
 
 function feedNPC() {
@@ -228,7 +237,7 @@ function collectLoot(loot) {
 
 function fight(mob) {
     sfx('damage', 0.5)
-    npc.hp -= random(0, 15)+3
+    npc.hp -= random(0, 20)+20
     
     // remove loot from Sim
     //monsterList.splice(monsterList.indexOf(mob), 1)
@@ -297,14 +306,14 @@ function searchCheck(ent) {
 
 function checkGameWalls(dX, dY){
     let blocked = {x: false, y: false}
-    if(pc.y+dY < (8*9) || pc.y+dY > (8*14)) {blocked.y = true} 
-    if(pc.x+dX < (8*1) || pc.x+dX > (8*14)) {blocked.x = true} 
+    if(pc.y+1+dY < (8*9) || pc.y-1+dY > (8*14)) {blocked.y = true} 
+    if(pc.x+1+dX < (8*1) || pc.x-1+dX > (8*14)) {blocked.x = true} 
     return blocked
 }
 
 function death() {
+    paused = true
     sfx('death', 0.3)
-    init();
 }
 
 function updateSim() {
@@ -314,8 +323,8 @@ function updateSim() {
     }
 
     // gen mobs and loot
-    lootTimer <= 0 ? lootTimer = 0 : lootTimer -= 1
-    monsterTimer <= 0 ? monsterTimer = 0 : monsterTimer -= 0.7
+    lootTimer <= 0 ? lootTimer = 0 : lootTimer -= 0.6
+    monsterTimer <= 0 ? monsterTimer = 0 : monsterTimer -= 0.4
 
     if (lootTimer <= 0) {
         spawnLoot()
@@ -380,7 +389,7 @@ function updateSim() {
     npc.hunger <= 0 ? npc.hunger = 0 : npc.hunger -= 0.1
 
     // gain gold
-    npc.gold += 0.03
+    //npc.gold += 0.03
 }
 
 function npcSearch() {
@@ -481,7 +490,21 @@ function drawSim() {
         sprite(elem.sid, elem.x, elem.y)
     })
 
-    sprite(16, npcTarget.x, npcTarget.y)
+    //sprite(16, npcTarget.x, npcTarget.y) // debug: draw target pos
+}
+
+function drawGameOver() {
+    // bg
+    paper(0)
+    rectf((8*3), (8*2), (8*10), (8*5))
+
+    // message
+    pen(1)
+    print("Game Over", (8*4), (8*3))
+    print("Press 'Action'", (8*4), (8*5))
+
+    // border
+    rect((8*3), (8*2), (8*10), (8*5))
 }
 
 function drawSimUI() {
