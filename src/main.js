@@ -6,6 +6,7 @@ var bleeper = require('pixelbox/bleeper');
 // Adventure Sim
 var npc = { // "Pet" non-playable character
     radius: 4,
+    speed: 1,
     hp: 100,
     hunger: 100,
     gold: 0,
@@ -13,6 +14,14 @@ var npc = { // "Pet" non-playable character
     y: 20,
     sid: 0
 }
+
+var npcTarget = {
+    radius: 3,
+    x: 0,
+    y: 0
+}
+
+var npcWalking = false
 
 var monster = { // damages npc
     radius: 4,
@@ -35,6 +44,7 @@ var lootList = [];
 // Action Game
 var pc = { // playable character
     radius: 4,
+    speed: 1,
     x: 60,
     y: 100,
     sid: 16
@@ -50,7 +60,7 @@ var obstacle = { // damages pc
 var obstacleList = [];
 
 var collectible = { // pc can collect
-    radius: 4,
+    radius: 3,
     x: 0,
     y: 0,
     sid0: 33,
@@ -68,10 +78,9 @@ var gameCost = 10;
 var background = getMap("map")
 
 function init() { // reset state data to defaults
-    gameTimer = gameTimerMax;
-    gameActive = false;
     npc = { // "Pet" non-playable character
         radius: 4,
+        speed: 0.7,
         hp: 100,
         hunger: 100,
         gold: 10,
@@ -79,9 +88,15 @@ function init() { // reset state data to defaults
         y: 20,
         sid: 0
     }
+    npcWalking = false
+    monsterList = []
+    lootList = []
 
+    gameTimer = gameTimerMax;
+    gameActive = false;
     pc = { // playable character
         radius: 4,
+        speed: 1,
         x: 60,
         y: 100,
         sid: 16
@@ -200,6 +215,8 @@ function startActionGame() {
 }
 
 function genGame() {
+    collectibleList = []
+    obstacleList = []
     for (let i=0; i<=5; i++) {
         let c1 = Object.assign({}, collectible)
         c1.x = random((8*1), (8*14))
@@ -244,6 +261,31 @@ function death() {
 
 function updateSim() {
     // npc actions
+    if (!npcWalking) {
+        npcWalking = true
+        npcTarget.x = (8 * random(0, 15))
+        npcTarget.y = (8 * random(0, 6)) + (8*1)
+    }
+
+    let vel = npcMoveTo(npcTarget.x, npcTarget.y)
+    let dX = vel[0]
+    let dY = vel[1]
+
+    if(npcWalking) {
+        if (collisionCheck(npc, npcTarget)) {
+            npcWalking = false
+        }
+    }
+
+    let blocked = checkSimWalls(dX, dY);
+
+    if (!blocked.x) {
+        npc.x += dX;
+    }
+    if (!blocked.y) {
+        npc.y += dY;
+    }
+
 
     // consume resources
     npc.hp <= 0 ? npc.hp = 0 : npc.hp -= 0.001
@@ -251,6 +293,36 @@ function updateSim() {
 
     // gain gold
     npc.gold += 0.03
+}
+
+function npcMoveTo(tx, ty) {
+    let vx = tx - npc.x
+    let vy = ty - npc.y
+    let vel = norm(vx, vy, npc.speed)
+    return [vel[0], vel[1]]
+}
+
+function checkSimWalls(dX, dY){
+    let blocked = {x: false, y: false}
+    if(npc.y+dY < (8*1) || npc.y+dY > (8*7)) {blocked.y = true} 
+    if(npc.x+dX < (8*0) || npc.x+dX > (8*15)) {blocked.x = true} 
+    return blocked
+}
+
+function mag(x, y) {
+    return Math.sqrt(x*x + y*y)
+}
+
+function norm(x, y, newMag=1) {
+    let m = 0
+    let _x = x
+    let _y = y
+    if (!(x == 0 && y == 0)) {
+        m = mag(x, y)
+        _x = (x/m) * newMag
+        _y = (y/m) * newMag
+    }
+    return [_x, _y]
 }
 
 /* Render functions */
