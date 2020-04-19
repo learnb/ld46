@@ -26,7 +26,8 @@ var monster = { // damages npc
     x: 0,
     y: 0,
     sid: 48,
-    type: 'm'
+    type: 'm',
+    id: 0
 }
 var monsterList = [];
 var monsterTimer = 100;
@@ -36,10 +37,12 @@ var loot = { // bonus gold when collected
     x: 0,
     y: 0,
     sid: 35,
-    type: 'l'
+    type: 'l',
+    id: 0
 }
 var lootList = [];
 var lootTimer = 100;
+var idCounter = 0;
 
 // Action Game
 var pc = { // playable character
@@ -89,6 +92,7 @@ function init() { // reset state data to defaults
     lootList = []
     monsterTimer = 100
     lootTimer = 100
+    idCounter = 0
 
     gameTimer = gameTimerMax;
     gameActive = false;
@@ -194,6 +198,12 @@ function updateGame(dX, dY) {
     if (gameTimer <= 0) gameActive = false;
 }
 
+function newID() {
+    let v = idCounter
+    idCounter += 1
+    return v
+}
+
 function hurtPC() {
     gameTimer -= 3
 }
@@ -207,18 +217,22 @@ function healNPC() {
 }
 
 function collectLoot(loot) {
+    sfx('coin', 0.5)
     npc.gold += 25
 
     // remove loot from Sim
-    let updatedList = lootList.filter(elem => elem !== loot)
+    //lootList.splice(lootList.indexOf(loot), 1)
+    let updatedList = lootList.filter((elem) => !(elem.id == loot.id))
     lootList = updatedList
 }
 
 function fight(mob) {
+    sfx('damage', 0.5)
     npc.hp -= random(0, 15)+3
     
     // remove loot from Sim
-    let updatedList = monsterList.filter(elem => elem !== loot)
+    //monsterList.splice(monsterList.indexOf(mob), 1)
+    let updatedList = monsterList.filter((elem) => !(elem.id == mob.id))
     monsterList = updatedList
 }
 
@@ -289,7 +303,7 @@ function checkGameWalls(dX, dY){
 }
 
 function death() {
-    sfx('death', 0.5)
+    sfx('death', 0.3)
     init();
 }
 
@@ -393,6 +407,7 @@ function spawnLoot() {
     let pos = randomSimPos()
     l.x = pos.x
     l.y = pos.y
+    l.id = newID()
     lootList.push(l)
 }
 
@@ -401,6 +416,7 @@ function spawnMonster() {
     let pos = randomSimPos()
     m.x = pos.x
     m.y = pos.y
+    m.id = newID()
     monsterList.push(m)
 }
 
