@@ -320,11 +320,12 @@ function updateSim() {
     // check end condition
     if (npc.hp <= 0 || npc.hunger <= 0) {
         sfx('death', 0.3)
-        npc.hp = 100
-        npc.hunger = 100
-        npc.gold -= 1000
-        if (npc.gold <= 0){
+        if (npc.gold < 1000){ // die
             death()
+        } else {  // revive
+            npc.hp = 100
+            npc.hunger = 100
+            npc.gold -= 1000
         }
     }
 
