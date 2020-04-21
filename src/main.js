@@ -322,7 +322,7 @@ function updateSim() {
         sfx('death', 0.3)
         npc.hp = 100
         npc.hunger = 100
-        npc.gold -= 150
+        npc.gold -= 1000
         if (npc.gold <= 0){
             death()
         }
