@@ -314,13 +314,18 @@ function checkGameWalls(dX, dY){
 
 function death() {
     paused = true
-    sfx('death', 0.3)
 }
 
 function updateSim() {
     // check end condition
     if (npc.hp <= 0 || npc.hunger <= 0) {
-        death()
+        sfx('death', 0.3)
+        npc.hp = 100
+        npc.hunger = 100
+        npc.gold -= 150
+        if (npc.gold <= 0){
+            death()
+        }
     }
 
     // gen mobs and loot
